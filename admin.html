@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Cart - Admin Panel</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7f5;color:#26332b}
+header{background:#128442;color:#fff;padding:20px 28px;margin-left:220px}
+header h1{margin:0;font-size:25px} header p{margin:8px 0 0}
+nav{position:fixed;top:0;bottom:0;left:0;width:220px;background:#153d2a;padding:25px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+nav:before{content:"QUICK CART";color:#8ee5a9;font-size:20px;font-weight:bold;padding:12px;margin-bottom:15px}
+nav a{display:block;padding:13px;color:#e5f5e9;text-decoration:none;font-weight:bold;border-radius:8px}
+nav a:hover{background:#247849}
+main{max-width:1200px;margin:25px 25px 25px 245px;padding:15px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px}
+.card,section{background:#fff;padding:22px;border-radius:12px;box-shadow:0 3px 14px #183b2810;margin-bottom:20px;border:1px solid #e6eee8}
+.card h3{color:#66756b;font-size:15px}.card h2{color:#128442;font-size:30px;margin-bottom:0}
+h2{color:#128442;margin-top:0}
+input,button,select{padding:12px;margin:6px 0;border-radius:7px;border:1px solid #d7e1da;font-size:14px}
+input{width:100%;display:block}
+button{background:#159447;color:white;border:none;cursor:pointer;font-weight:bold}
+button:hover{background:#107638}button:disabled{opacity:.6;cursor:wait}
+.note{color:#68766d;font-size:14px}
+#productList,#orderList{margin-top:18px}
+.product-row,.order-card{padding:14px;margin:10px 0;border:1px solid #e1e9e3;border-radius:9px;background:#fff}
+.product-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.product-row button{margin-left:auto}
+.inventory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.inventory-card{border:1px solid #e1e9e3;border-radius:9px;padding:16px;background:#fff}
+.low-stock{color:#c62828;font-weight:bold}.good-stock{color:#16803d;font-weight:bold}
+.status-select{max-width:230px;width:100%;display:block}
+.small-button{padding:10px 14px}
+section{scroll-margin-top:18px}
+@media(max-width:700px){nav{position:static;width:100%;flex-direction:row;flex-wrap:wrap}nav:before{width:100%;margin-bottom:0}header{margin-left:0;padding:15px}main{margin:15px auto;padding:12px}}
+
+/* Dashboard refresh - Quick Cart */
+:root{--green:#119b55;--green-dark:#0b7540;--muted:#6b7b70;--line:#e7eee9;--soft:#f6faf7}
+body{background:#f3f7f4;color:#24352b}
+header{background:linear-gradient(110deg,#0d8747,#19b765);padding:22px 28px;box-shadow:0 5px 18px #0b754018}
+nav{background:#fff;border-right:1px solid var(--line);box-shadow:4px 0 20px #193a2510}
+nav:before{content:"🛒 QUICK CART";color:#11864a;font-size:19px;padding:12px;margin-bottom:18px}
+nav a{color:#42564a;border-radius:10px;font-size:14px;padding:13px 14px}
+nav a:first-of-type,nav a:hover{background:#e6f8ed;color:#078344}
+main{max-width:1440px;margin:24px 28px 30px 245px;padding:8px}
+.card,section{border:1px solid #e9efeb;border-radius:16px;box-shadow:0 5px 22px #163d2410}
+.cards{gap:16px}
+#dashboard .card{position:relative;overflow:hidden;min-height:124px;padding:20px 22px}
+#dashboard .card:after{content:"";position:absolute;right:-20px;bottom:-35px;width:100px;height:100px;border-radius:50%;background:#e9f8ef}
+#dashboard .card h3{margin:0 0 12px;color:#66766b;font-weight:600}
+#dashboard .card h2{font-size:30px;position:relative;z-index:1}
+h2{color:#168448}
+.dashboard-panels{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,1fr);gap:18px;margin:20px 0}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 5px 22px #163d2408;min-width:0}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.panel-heading h2{font-size:18px;margin:0;color:#24352b}
+.panel-heading span{font-size:12px;color:var(--muted)}
+.sales-chart{height:220px;display:flex;align-items:flex-end;gap:10px;padding:15px 4px 26px;border-bottom:1px solid #e8eee9;background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#edf2ee 44px)}
+.chart-column{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px}
+.chart-bar{width:min(28px,75%);min-height:4px;background:linear-gradient(180deg,#4bd68a,#0d9950);border-radius:6px 6px 2px 2px;position:relative}
+.chart-bar:hover{filter:brightness(.94)}
+.chart-label{font-size:11px;color:#7a897f;white-space:nowrap}
+.chart-value{font-size:10px;color:#4b5d51;white-space:nowrap}
+.status-list{display:grid;gap:17px}
+.status-item{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:13px;color:#526258}
+.status-track{grid-column:1/-1;height:9px;background:#edf2ee;border-radius:99px;overflow:hidden}
+.status-fill{height:100%;border-radius:99px;background:#18ad61}
+.status-item:nth-child(2) .status-fill{background:#168be0}.status-item:nth-child(3) .status-fill{background:#e6a23b}.status-item:nth-child(4) .status-fill{background:#8a6ce0}
+section{padding:24px}
+section h2{font-size:21px}
+input,button,select{border-radius:9px}
+button{background:#129653}button:hover{background:#0b783f}
+.product-row,.order-card,.inventory-card{border-radius:12px;border-color:#e7eee9}
+.order-card{padding:18px}
+.order-card h3{margin-top:0;color:#1b7944}
+.note{line-height:1.5}
+@media(max-width:900px){.dashboard-panels{grid-template-columns:1fr}main{margin-left:230px}}
+@media(max-width:700px){nav{position:static;width:100%;flex-direction:row;flex-wrap:wrap}nav:before{width:100%;margin-bottom:0}header{margin-left:0;padding:15px}main{margin:15px auto;padding:12px}.dashboard-panels{grid-template-columns:1fr}.sales-chart{gap:5px}.chart-value{font-size:9px}}
+
+
+/* COMPACT LAYOUT FIX: tighten large gaps between dashboard blocks */
+#dashboard.cards { gap: 10px !important; margin: 0 0 8px !important; }
+/* Keep the chart and order overview close together, like the reference dashboard */
+.dashboard-panels { margin: 8px 0 12px !important; gap: 12px !important; align-items: start !important; }
+.dashboard-panels .panel { align-self: start !important; }
+#salesChart { height: 125px !important; min-height: 0 !important; padding: 7px 3px 17px !important; }
+.status-list { gap: 8px !important; }
+.panel-heading { margin-bottom: 8px !important; }
+#dashboard .card { min-height: 96px !important; padding: 14px 16px !important; margin: 0 !important; }
+#dashboard .card h3 { margin: 0 0 7px !important; font-size: 13px !important; }
+#dashboard .card h2 { margin: 0 !important; font-size: 26px !important; }
+main { margin-top: 8px !important; margin-bottom: 8px !important; padding: 6px !important; }
+.dashboard-panels { gap: 8px !important; margin: 4px 0 6px !important; align-items: start !important; }
+.panel { padding: 15px !important; border-radius: 12px !important; }
+.panel-heading { margin-bottom: 10px !important; }
+.sales-chart { height: 125px !important; min-height: 0 !important; padding: 7px 3px 17px !important; gap: 6px !important; }
+.status-list { gap: 10px !important; }
+section { padding: 10px 14px !important; margin: 0 0 4px !important; border-radius: 12px !important; }
+section h2 { font-size: 19px !important; margin: 0 0 5px !important; }
+section .note { margin: 3px 0 5px !important; }
+section .cards { gap: 6px !important; }
+section .card { padding: 14px !important; margin: 0 !important; }
+#productList, #orderList { margin-top: 10px !important; }
+.product-row, .order-card { margin: 7px 0 !important; padding: 12px !important; }
+.inventory-grid { gap: 10px !important; }
+.inventory-card { padding: 12px !important; }
+@media (max-width: 900px) { .dashboard-panels { grid-template-columns: minmax(0, 1fr) !important; } }
+@media (max-width: 700px) { main { margin: 10px auto !important; padding: 8px !important; } #dashboard.cards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } .dashboard-panels { margin: 10px 0 !important; } .sales-chart { height: 145px !important; } }
+
+/* EXTRA CLOSE STATUS BARS: only tighten spacing between the status rows */
+.status-list { gap: 3px !important; }
+.status-item { row-gap: 3px !important; }
+.status-track { height: 8px !important; }
+
+/* FINAL TIGHT SPACING: reduce the blank space between section/green divider lines */
+section { margin-top: 0 !important; margin-bottom: 4px !important; padding-top: 8px !important; padding-bottom: 8px !important; }
+section h2 { margin-top: 0 !important; margin-bottom: 4px !important; }
+section .note { margin-top: 2px !important; margin-bottom: 4px !important; }
+.dashboard-panels { margin-top: 4px !important; margin-bottom: 6px !important; gap: 8px !important; }
+
+
+/* QuickCart orange admin theme */
+:root { --green: #e9822b; --green-dark: #c76618; --muted: #75685e; --line: #f0dfcf; --soft: #fff8f0; }
+body { background: #fffaf5; color: #3b3028; }
+header { background: linear-gradient(110deg, #dc7022, #f3a044); box-shadow: 0 5px 18px rgba(180, 91, 23, .13); }
+nav { border-right-color: #f0dfcf; box-shadow: 4px 0 20px rgba(107, 63, 25, .08); }
+nav:before { color: #d66e20; }
+nav a:first-of-type, nav a:hover { background: #fff0df; color: #a94e0b; }
+.card h2, h2 { color: #d57420; }
+#dashboard .card:after { background: #fff0df; }
+.chart-bar { background: linear-gradient(180deg, #ffb85f, #e77b24); }
+.status-fill { background: #ed9438; }
+button { background: #e9822b; }
+button:hover { background: #ca6b1e; }
+input:focus, select:focus { outline: 2px solid rgba(233, 130, 43, .22); border-color: #e9822b; }
+.order-card h3 { color: #bd651c; }
+
+
+/* Lighter orange dashboard polish, compact status lines, and coupon cards */
+:root { --green: #ef9c4a; --green-dark: #d47c29; --muted: #75685e; --line: #f2e2d2; --soft: #fff9f2; }
+body { background: #fffaf5; }
+header { color: #4a301c; background: linear-gradient(110deg, #f1a254, #f7bb77); box-shadow: 0 5px 18px rgba(180, 91, 23, .10); }
+nav { background: #fffdfb; border-right-color: #f2e2d2; }
+nav:before { color: #df8d3b; }
+nav a:first-of-type, nav a:hover { background: #fff3e4; color: #a95b17; }
+.card h2, h2 { color: #df8d3b; }
+#dashboard .card:after { background: #fff2e1; }
+.chart-bar { background: linear-gradient(180deg, #ffc77f, #ed9745); }
+.status-fill { background: #efa95a; }
+button { background: #ed9a48; }
+button:hover { background: #d98531; }
+input:focus, select:focus { outline: 2px solid rgba(237, 154, 72, .2); border-color: #ed9a48; }
+.order-card h3 { color: #cf7c2b; }
+.status-list { gap: 1px !important; }
+.status-item { gap: 1px 8px !important; row-gap: 1px !important; }
+.status-track { height: 6px !important; }
+.admin-coupon-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
+.admin-coupon-card { display: flex; flex-direction: column; gap: 5px; padding: 16px; border: 1px dashed #edae69; border-radius: 12px; background: linear-gradient(135deg, #fffaf3, #fff1df); }
+.admin-coupon-code { color: #b85f18; font-size: 17px; font-weight: 800; letter-spacing: .8px; }
+.admin-coupon-card strong { color: #423328; font-size: 15px; }
+.admin-coupon-card small { color: #75685e; font-size: 12px; }
+@media (max-width: 560px) { .admin-coupon-grid { grid-template-columns: 1fr; } }
+/* Tighter horizontal guides in the Sales Overtime chart */
+#salesChart.sales-chart { background: repeating-linear-gradient(to bottom, transparent 0, transparent 43px, #edf2ee 44px) !important; border-bottom-color: #f0dfcf !important; }#salesChart.sales-chart { justify-content: center !important; gap: 58px !important; }
+#salesChart .chart-column { flex: 0 0 120px !important; }
+@media (max-width: 700px) {
+  #salesChart.sales-chart { gap: 8px !important; }
+  #salesChart .chart-column { flex-basis: 80px !important; }
+}/* Restore the close Sales Overtime guide lines */
+#salesChart.sales-chart { background: repeating-linear-gradient(to bottom, transparent 0, transparent 43px, #edf2ee 44px) !important; border-bottom: 1px solid #e8eee9 !important; }</style>
+</head>
+<body>
+<style>
+.admin-auth-shield{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:#fffaf5}
+.admin-auth-shield[hidden]{display:none!important}
+.admin-auth-card{width:min(420px,100%);padding:30px;background:#fff;border:1px solid #f0dfcf;border-radius:18px;box-shadow:0 16px 55px #51351f20}
+.admin-auth-card h1{margin-top:0;color:#d57420}.admin-auth-card label{display:block;margin-top:14px;font-weight:700;color:#554536}
+.admin-auth-card input{margin-top:6px}.admin-auth-card button{width:100%;margin-top:16px}.admin-auth-message{min-height:20px;color:#b42318;font-size:14px}
+.admin-logout{float:right;margin:0;padding:10px 14px;background:#9b4c17}
+</style>
+<div id="adminAuthShield" class="admin-auth-shield">
+  <form id="adminAuthForm" class="admin-auth-card">
+    <h1>Quick Cart Admin</h1>
+    <p>Sign in to manage QuickCart products, inventory, and customer orders.</p>
+    <label>Email address<input id="adminAuthEmail" type="email" autocomplete="username" value="admin@gmail.com" required></label>
+    <label>Password<input id="adminAuthPassword" type="password" autocomplete="current-password" required></label>
+    <p id="adminAuthMessage" class="admin-auth-message" role="status"></p>
+    <button id="adminAuthSubmit" type="submit">Admin Sign In</button>
+  </form>
+</div>
+<nav>
+  <a href="#dashboard">🏠 Dashboard</a>
+  <a href="#products">🛍️ Manage Products</a>
+  <a href="#inventory">📦 Inventory / Stock</a>
+  <a href="#orders">🛒 All Orders</a>
+  <a href="#analytics">📊 Sales & Analytics</a>
+  <a href="#offers">🏷️ Offers & Coupons</a>
+  <a href="#settings">⚙️ Settings</a>
+</nav>
+<header>
+  <button class="admin-logout" type="button" onclick="adminSignOut()">Sign Out</button>
+  <h1>🛒 Quick Cart Admin Panel</h1>
+  <p>Manage your grocery store</p>
+</header>
+<main>
+  <div id="dashboard" class="cards">
+    <div class="card"><h3>🛍️ Total Products</h3><h2 id="productCount">0</h2></div>
+    <div class="card"><h3>🧾 Total Orders</h3><h2 id="orderCount">0</h2></div>
+    <div class="card"><h3>₹ Total Sales</h3><h2 id="totalSales">₹0</h2></div>
+    <div class="card"><h3>👥 Customers</h3><h2 id="customerCount">0</h2></div>
+    <div class="card"><h3>🚚 Pending Deliveries</h3><h2 id="deliveryCount">0</h2></div>
+  </div>
+
+  <div class="dashboard-panels">
+    <div class="panel">
+      <div class="panel-heading"><h2>Sales Overtime</h2><span>Recent orders · database data</span></div>
+      <div id="salesChart" class="sales-chart" aria-label="Sales overtime chart"></div>
+      <p class="note">Chart groups order totals by date. It updates when orders are refreshed.</p>
+    </div>
+    <div class="panel">
+      <div class="panel-heading"><h2>Order Overview</h2><span>By current status</span></div>
+      <div id="statusBreakdown" class="status-list"></div>
+      <p class="note">Payment-method totals are not shown because the current orders API does not provide payment-method data.</p>
+    </div>
+  </div>
+
+  <section id="products">
+    <h2>Manage Products</h2>
+    <p class="note">Products are saved in the store database and shown on the customer website.</p>
+    <label for="productName">Product name</label>
+    <input id="productName" placeholder="e.g. Apples">
+    <label for="productCategory">Category</label>
+    <select id="productCategory"><option>Fruits &amp; Vegetables</option><option>Dairy, Bread &amp; Eggs</option><option>Cold Drinks &amp; Juices</option><option>Snacks &amp; Munchies</option><option>Breakfast &amp; Instant Food</option><option>Sweet Tooth</option><option>Bakery &amp; Biscuits</option></select>
+    <label for="productPrice">Product price (₹)</label>
+    <input id="productPrice" type="number" min="0.01" step="0.01" placeholder="e.g. 100">
+    <label for="productStock">Stock quantity</label>
+    <input id="productStock" type="number" min="0" step="1" placeholder="e.g. 20">
+    <button onclick="addProduct()">Add Product</button>
+    <div id="productList"></div>
+  </section>
+
+  <section id="inventory">
+    <h2>📦 Inventory / Stock Management</h2>
+    <p class="note">Products with stock of 5 or fewer are marked Low Stock.</p>
+    <div id="inventoryList" class="inventory-grid"></div>
+  </section>
+
+  <section id="orders">
+    <h2>Customer Orders</h2>
+    <p class="note">Orders are loaded from the Quick Cart server database. Keep the server running while using this page.</p>
+    <button onclick="showOrders()">Refresh Orders</button>
+    <div id="orderList"></div>
+  </section>
+
+  <section id="analytics">
+    <h2>📊 Sales & Analytics</h2>
+    <p class="note">These figures are calculated from the orders returned by your database API.</p>
+    <div class="cards">
+      <div class="card"><h3>Orders Loaded</h3><h2 id="analyticsOrders">0</h2></div>
+      <div class="card"><h3>Non-cancelled Sales</h3><h2 id="analyticsSales">₹0</h2></div>
+      <div class="card"><h3>Cancelled Orders</h3><h2 id="cancelledCount">0</h2></div>
+    </div>
+    <button onclick="showOrders()">Refresh Analytics</button>
+  </section>
+
+  <section id="offers">
+    <h2>🏷️ Offers & Coupons</h2>
+    <p class="note">Coupons currently available on the Quick Cart website:</p>
+    <div class="admin-coupon-grid">
+      <article class="admin-coupon-card">
+        <span class="admin-coupon-code">SAVE50</span>
+        <strong>Flat ₹50 OFF</strong>
+        <small>On orders of ₹300 or more</small>
+      </article>
+      <article class="admin-coupon-card">
+        <span class="admin-coupon-code">WELCOME10</span>
+        <strong>10% OFF</strong>
+        <small>On orders of ₹100 or more</small>
+      </article>
+    </div>
+    <p class="note">These offers are shown here for reference and match the customer checkout coupons.</p>
+  </section>
+
+  <section id="settings">
+    <h2>⚙️ Settings</h2>
+    <p class="note">Basic admin page information.</p>
+    <p><strong>Store:</strong> Quick Cart</p>
+    <p><strong>Orders API:</strong> <code>/api/orders</code></p>
+    <p><strong>Product list storage:</strong> Quick Cart database</p>
+    <button onclick="clearProducts()">Clear Admin Product List</button>
+  </section>
+</main>
+
+<script>
+let products = [];
+async function loadProducts() {
+  const response = await fetch("/api/products");
+  if (!response.ok) throw new Error("Could not load products.");
+  products = await response.json();
+  renderProducts();
+}
+async function clearProducts() {
+  if (!confirm("Delete all products from the shared store catalog?")) return;
+  for (const product of [...products]) {
+    const response = await fetch("/api/products/" + product.id, {method:"DELETE"});
+    if (!response.ok) { alert("Could not delete all products."); await loadProducts(); return; }
+  }
+  products = [];
+  renderProducts();
+}
+
+function renderProducts() {
+  document.getElementById("productCount").innerText = products.length;
+  const list = document.getElementById("productList");
+  list.replaceChildren();
+
+  if (products.length === 0) {
+    list.textContent = "No products added yet. Use the fields above to add your first product.";
+  } else {
+    products.forEach((product, index) => {
+      const item = document.createElement("div");
+      item.className = "product-row";
+      const details = document.createElement("span");
+      details.textContent = `${product.name} — ₹${Number(product.price).toFixed(2)} — Stock: ${product.stock}`;
+      const editButton = document.createElement("button");
+      editButton.className = "small-button";
+      editButton.textContent = "Edit price / stock";
+      editButton.onclick = async () => {
+        const price = prompt("Product price (₹):", product.price);
+        if (price === null) return;
+        const stock = prompt("Stock quantity:", product.stock);
+        if (stock === null) return;
+        try {
+          const response = await fetch("/api/products/" + product.id, {method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({price:Number(price), stock:Number(stock)})});
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Could not update product.");
+          product.price = result.price;
+          product.stock = result.stock;
+          renderProducts();
+        } catch (error) { alert(error.message); }
+      };
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "small-button";
+      deleteButton.textContent = "Delete";
+      deleteButton.onclick = async () => {
+        deleteButton.disabled = true;
+        try {
+          const response = await fetch("/api/products/" + product.id, {method:"DELETE"});
+          if (!response.ok) throw new Error("Could not delete product.");
+          products.splice(index, 1);
+          renderProducts();
+        } catch (error) { alert(error.message); deleteButton.disabled = false; }
+      };
+      item.append(details, editButton, deleteButton);
+      list.appendChild(item);
+    });
+  }
+
+  renderInventory();
+}
+
+function renderInventory() {
+  const list = document.getElementById("inventoryList");
+  list.replaceChildren();
+
+  if (products.length === 0) {
+    list.textContent = "No products added yet. Add a product in Manage Products and it will appear here.";
+    return;
+  }
+
+  products.forEach(product => {
+    const item = document.createElement("div");
+    item.className = "inventory-card";
+    const name = document.createElement("h3");
+    name.textContent = product.name;
+    const price = document.createElement("p");
+    price.textContent = "Price: ₹" + Number(product.price).toFixed(2);
+    const stock = document.createElement("p");
+    stock.textContent = "Stock: " + product.stock;
+    const warning = document.createElement("p");
+    if (Number(product.stock) <= 5) {
+      warning.textContent = "⚠️ Low Stock";
+      warning.className = "low-stock";
+    } else {
+      warning.textContent = "✅ Stock Available";
+      warning.className = "good-stock";
+    }
+    item.append(name, price, stock, warning);
+    list.appendChild(item);
+  });
+}
+
+async function addProduct() {
+  const name = document.getElementById("productName").value.trim();
+  const priceText = document.getElementById("productPrice").value;
+  const stockText = document.getElementById("productStock").value;
+  const price = Number(priceText);
+  const stock = Number(stockText);
+
+  if (!name || priceText === "" || !Number.isFinite(price) || price <= 0 ||
+      stockText === "" || !Number.isInteger(stock) || stock < 0) {
+    alert("Enter a product name, a price above 0, and a whole-number stock quantity of 0 or more.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/products", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name, category:document.getElementById("productCategory").value, price, stock})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Could not save product.");
+    products.push(result);
+  } catch (error) { alert(error.message); return; }
+  document.getElementById("productName").value = "";
+  document.getElementById("productPrice").value = "";
+  document.getElementById("productStock").value = "";
+  renderProducts();
+  alert("Product added. It is now visible in Manage Products and Inventory.");
+}
+
+function renderDashboardCharts(orders) {
+  const customers = new Set(orders.map(o => String(o.customerName || o.customer_name || '').trim().toLowerCase()).filter(Boolean));
+  document.getElementById("customerCount").innerText = customers.size;
+  document.getElementById("deliveryCount").innerText = orders.filter(o => !["Delivered", "Cancelled"].includes(o.status || "Confirmed")).length;
+
+  const salesByDate = new Map();
+  orders.filter(o => o.status !== "Cancelled").forEach(order => {
+    const raw = order.created_at || order.date || order.createdAt;
+    const date = raw ? String(raw).slice(0, 10) : "Unknown";
+    salesByDate.set(date, (salesByDate.get(date) || 0) + Number(order.total || 0));
+  });
+  const salesEntries = [...salesByDate.entries()].sort((a,b) => a[0].localeCompare(b[0])).slice(-10);
+  const chart = document.getElementById("salesChart");
+  chart.replaceChildren();
+  if (!salesEntries.length) {
+    chart.textContent = "No sales data yet. Place an order to populate this chart.";
+  } else {
+    const max = Math.max(1, ...salesEntries.map(entry => entry[1]));
+    salesEntries.forEach(([date, amount]) => {
+      const col = document.createElement("div"); col.className = "chart-column";
+      const value = document.createElement("span"); value.className = "chart-value"; value.textContent = "₹" + Math.round(amount);
+      const bar = document.createElement("div"); bar.className = "chart-bar"; bar.style.height = Math.max(4, amount / max * 78) + "%"; bar.title = date + ": ₹" + amount.toFixed(2);
+      const label = document.createElement("span"); label.className = "chart-label"; label.textContent = date === "Unknown" ? "Other" : date.slice(5);
+      col.append(value, bar, label); chart.appendChild(col);
+    });
+  }
+
+  const statusBox = document.getElementById("statusBreakdown");
+  statusBox.replaceChildren();
+  const statuses = ["Confirmed", "Packed", "Out for Delivery", "Delivered", "Cancelled"];
+  statuses.forEach(status => {
+    const count = orders.filter(o => (o.status || "Confirmed") === status).length;
+    const item = document.createElement("div"); item.className = "status-item";
+    const name = document.createElement("span"); name.textContent = status;
+    const number = document.createElement("strong"); number.textContent = count;
+    const track = document.createElement("div"); track.className = "status-track";
+    const fill = document.createElement("div"); fill.className = "status-fill"; fill.style.width = (orders.length ? count / orders.length * 100 : 0) + "%";
+    track.appendChild(fill); item.append(name, number, track); statusBox.appendChild(item);
+  });
+}
+
+async function showOrders() {
+  const list = document.getElementById("orderList");
+  list.textContent = "Loading orders...";
+  try {
+    const response = await fetch("/api/orders");
+    if (!response.ok) throw new Error("Could not load orders. Check server.");
+    const orders = await response.json();
+
+    document.getElementById("orderCount").innerText = orders.length;
+    document.getElementById("analyticsOrders").innerText = orders.length;
+    const nonCancelled = orders.filter(order => order.status !== "Cancelled");
+    const sales = nonCancelled.reduce((sum, order) => sum + Number(order.total || 0), 0);
+    const cancelled = orders.filter(order => order.status === "Cancelled").length;
+    document.getElementById("totalSales").innerText = "₹" + sales.toFixed(2);
+    document.getElementById("analyticsSales").innerText = "₹" + sales.toFixed(2);
+    document.getElementById("cancelledCount").innerText = cancelled;
+    renderDashboardCharts(orders);
+    list.replaceChildren();
+
+    if (!orders.length) {
+      list.textContent = "No orders found in database.";
+      return;
+    }
+
+    orders.forEach(order => {
+      const item = document.createElement("div");
+      item.className = "order-card";
+      const heading = document.createElement("h3");
+      heading.textContent = "Order: " + (order.orderId || order.order_id || order.id || "N/A");
+      const customer = document.createElement("p");
+      customer.textContent = "Customer: " + (order.customerName || order.customer_name || "N/A");
+      const total = document.createElement("p");
+      total.textContent = "Total: ₹" + (order.total ?? "N/A");
+      const statusText = document.createElement("p");
+      statusText.textContent = "Current Status: " + (order.status || "Confirmed");
+
+      const select = document.createElement("select");
+      select.className = "status-select";
+      ["Confirmed", "Packed", "Out for Delivery", "Delivered", "Cancelled"].forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+      select.value = order.status || "Confirmed";
+
+      const updateButton = document.createElement("button");
+      updateButton.textContent = "Update Status";
+      updateButton.onclick = async () => {
+        try {
+          updateButton.disabled = true;
+          const result = await fetch("/api/orders/" + order.id + "/status", {
+            method: "PATCH",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({status: select.value})
+          });
+          const data = await result.json();
+          if (!result.ok) throw new Error(data.error || "Update failed");
+          alert("Order status updated!");
+          await showOrders();
+        } catch (error) {
+          alert("Status update failed: " + error.message);
+        } finally {
+          updateButton.disabled = false;
+        }
+      };
+      item.append(heading, customer, total, statusText, select, updateButton);
+      list.appendChild(item);
+    });
+  } catch (error) {
+    console.error("Orders error:", error);
+    list.textContent = "Could not load orders. Check that the Quick Cart server is running, then refresh this page.";
+  }
+}
+
+async function initializeAdmin() {
+  const shield = document.getElementById("adminAuthShield");
+  const embedded = window.parent !== window;
+  if (embedded) shield.hidden = true;
+  try {
+    const response = await fetch("/api/admin/me");
+    if (response.ok) {
+      shield.hidden = true;
+      await loadProducts();
+      renderProducts();
+      await showOrders();
+    } else if (embedded) {
+      shield.hidden = false;
+      shield.innerHTML = '<div class="admin-auth-card"><h1>Admin sign-in required</h1><p>Returning to the shared QuickCart login…</p></div>';
+      window.parent.postMessage({type:"quickcart-auth-required", role:"admin"}, window.location.origin);
+    }
+  } catch (error) {
+    if (embedded) window.parent.postMessage({type:"quickcart-auth-required", role:"admin"}, window.location.origin);
+  }
+}
+document.getElementById("adminAuthForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = document.getElementById("adminAuthSubmit");
+  const message = document.getElementById("adminAuthMessage");
+  button.disabled = true;
+  message.textContent = "";
+  try {
+    const response = await fetch("/api/admin/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:document.getElementById("adminAuthEmail").value, password:document.getElementById("adminAuthPassword").value})});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Sign in failed.");
+    document.getElementById("adminAuthPassword").value = "";
+    document.getElementById("adminAuthShield").hidden = true;
+    await loadProducts();
+    renderProducts();
+    await showOrders();
+  } catch (error) {
+    message.textContent = location.protocol === "file:"
+      ? "Start Quick Cart.bat, then open http://localhost:3000/admin.html instead of opening this file directly."
+      : error.message || "Could not sign in.";
+  }
+  finally { button.disabled = false; }
+});
+async function adminSignOut() {
+  await fetch("/api/admin/logout", {method:"POST"});
+  location.reload();
+}
+initializeAdmin();
+</script>
+</body>
+</html>
+
+
+/* FINAL TWEAK: bring the green status bars in Order Overview closer together */
+#statusBreakdown { gap: 3px !important; }
+#statusBreakdown .status-item { row-gap: 4px !important; }
+#statusBreakdown .status-track { height: 7px !important; }
